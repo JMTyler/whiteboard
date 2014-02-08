@@ -5,14 +5,6 @@ GLOBAL.express = express = require("express");
 GLOBAL.app     = express();
 GLOBAL.ejs     = require('ejs');
 
-//Mongoose
-mongoose = require('mongoose');
-var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/gifbin';
-mongoose.connect(mongoUri);
-mongoose.connection.on('error', function(){
-	console.log(">>>ERROR: Run Mongodb.exe ya goof!");
-});
-
 //Express
 app.engine('html', ejs.renderFile);
 app.use(express.bodyParser());
