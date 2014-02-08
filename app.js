@@ -20,7 +20,7 @@ app.use(express.static(__dirname + '/public'));
 
 // Web server
 var port = process.env.PORT || 80;
-server.listen(port, function() {
+server.listen(port, server.INADDR_ANY, function() {
 	console.log("Listening on " + port);
 });
 
@@ -54,8 +54,7 @@ app.get('*', function(req,res){
 
 //Socket server
 io.sockets.on('connection', function(socket) {
-	socket.emit('news', {hello: 'world'});
-	socket.on('my other event', function(data) {
-		console.log('LOOK AT ME MAH', data);
+	socket.on('draw', function(data) {
+		socket.broadcast.emit('draw', data);
 	});
 });
