@@ -19,13 +19,6 @@ app.listen(port, function() {
 mw  = require('./modules/middleware.js');
 xo  = require('./modules/xo-node.js');
 
-
-//Models
-require('./modules/models/gif.js');
-require('./modules/models/category.js');
-require('./modules/models/clicks.js');
-
-
 //Renders HTML file with layout.ejs
 var render = function(htmlFile, vars){
 	var tempRender = ejs.render(fs.readFileSync(__dirname + '/views/' + 'layout.ejs','utf8'), {
