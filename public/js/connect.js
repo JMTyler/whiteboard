@@ -33,7 +33,7 @@ $(function() {
 		.prop('width', 500)
 		.prop('height', 500);
 	
-	socket = io.connect('http://10.255.31.131');
+	socket = io.connect(location.href);
 	
 	/*canvas.on('click', function(e) {
 		var data = {
