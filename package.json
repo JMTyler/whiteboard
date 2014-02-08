@@ -19,6 +19,7 @@
   "dependencies": {
     "ejs": "~0.8.5",
     "express": "~3.4.8",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "socket.io": "~0.9.16"
   }
 }
