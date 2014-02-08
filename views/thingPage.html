@@ -1,0 +1,22 @@
+
+<link rel="stylesheet" type="text/css" href="../style/index.css" />
+
+<script type="text/javascript" src="../js/components/Searchbar.js"></script>
+<script type="text/javascript" src="../js/views/GifCard.js"></script>
+<script type="text/javascript" src="../js/views/LinkBtn.js"></script>
+<script type="text/javascript" src="../js/views/SearchResults.js"></script>
+<script type="text/javascript" src="../js/views/CategoryView.js"></script>
+
+
+<title>gifbin.all</title>
+
+<div class='main content' style='min-height : 600px;'></div>
+
+<script>
+	var test = <%- test %>;
+
+
+	var searchResults = SearchResults.create(gifs);
+	searchResults.searchBar = SearchbarComponent.create().prependTo($('.main'));
+	searchResults.appendTo($('.main'));
+</script>
