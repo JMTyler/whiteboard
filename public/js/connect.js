@@ -7,12 +7,19 @@ $(function() {
 	// TODO: Not using 'radius' because this is a line, not a circle.
 	var _draw = function(canvas, data)
 	{
+		/* Click and drag to draw a rectangle. data = {from: {x, y}, to: {x, y}} */
+		var context = canvas.get(0).getContext('2d');
+		context.beginPath();  // TODO: don't think this is needed
+		context.strokeStyle = '#000';
+		context.strokeRect(data.from.x, data.from.y, data.to.x - data.from.x, data.to.y - data.from.y);
+		
+		/* Click and drag to draw a straight line. data = {from: {x, y}, to: {x, y}}
 		var context = canvas.get(0).getContext('2d');
 		context.beginPath();  // TODO: don't think this is needed
 		context.moveTo(data.from.x, data.from.y);
 		context.lineTo(data.to.x, data.to.y);
 		context.strokeStyle = '#000';
-		context.stroke();
+		context.stroke();*/
 		
 		/* Click and drag to draw a freeform line. data = {stops: [{x, y}, ...], colour}
 		var stops = data.stops;
@@ -51,7 +58,9 @@ $(function() {
 	
 	socket = io.connect(location.href);
 	
-	/* Click and drag to draw a straight line. Shows the temporary line as you draw. */
+	/* Click and drag to draw a straight line. Shows the temporary line as you draw.
+	 * Click and drag to draw a rectangle. Shows the temporary rectangle as you draw.
+	 */
 	var showYourProgress,
 		isDrawing = false,
 		startPos = {x: 0, y: 0};
