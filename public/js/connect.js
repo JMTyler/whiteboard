@@ -5,14 +5,22 @@ $(function() {
 		context = canvas.get(0).getContext('2d');
 	
 	// TODO: Not using 'radius' because this is a line, not a circle.
-	var _draw = function(data)
+	var _draw = function(canvas, data)
 	{
+		var context = canvas.get(0).getContext('2d');
+		context.beginPath();  // TODO: don't think this is needed
+		context.moveTo(data.from.x, data.from.y);
+		context.lineTo(data.to.x, data.to.y);
+		context.strokeStyle = '#000';
+		context.stroke();
+		
+		/* Click and drag to draw a freeform line. data = {stops: [{x, y}, ...], colour}
 		var stops = data.stops;
 		if (stops.length == 0) {
 			return;
 		}
 		
-		context.beginPath();
+		context.beginPath();  // TODO: don't think this is needed
 		context.moveTo(stops[0].x, stops[0].y);
 		
 		for (var i = 1; i < stops.length; i++) {
@@ -20,13 +28,21 @@ $(function() {
 		}
 		
 		context.strokeStyle = data.colour;
-		context.stroke();
+		context.stroke();*/
 		
-		/*context.beginPath();
+		/* Click to draw a large dot. data = {x, y, r, c}
+		context.beginPath();
 		context.arc(data.x, data.y, data.r, 0, Math.PI * 2, false);
 		context.closePath();
 		context.fillStyle = data.c;
 		context.fill();*/
+	};
+	
+	var _cloneCanvas = function(canvas)
+	{
+		var newCanvas = canvas.clone();
+		newCanvas.get(0).getContext('2d').drawImage(canvas.get(0), 0, 0);
+		return newCanvas;
 	};
 	
 	canvas.css('border', 'dotted 1px black')
@@ -35,7 +51,59 @@ $(function() {
 	
 	socket = io.connect(location.href);
 	
-	/*canvas.on('click', function(e) {
+	/* Click and drag to draw a straight line. Shows the temporary line as you draw. */
+	var showYourProgress,
+		isDrawing = false,
+		startPos = {x: 0, y: 0};
+	$(document).on('mousedown', 'canvas', function(e) {
+		isDrawing = true;
+		startPos.x = e.offsetX;
+		startPos.y = e.offsetY;
+		
+		// Clone current state 
+		showYourProgress = _cloneCanvas(canvas);
+	});
+	$(document).on('mousemove', 'canvas', function(e) {
+		if (!isDrawing) {
+			return;
+		}
+		
+		context.clearRect(0, 0, 500, 500);
+		context.drawImage(showYourProgress.get(0), 0, 0);
+		
+		var data = {
+			from: startPos,
+			to: {
+				x: e.offsetX,
+				y: e.offsetY
+			}
+		};
+		_draw(canvas, data);
+	});
+	$(document).on('mouseup', 'canvas', function(e) {
+		if (!isDrawing) {
+			return;
+		}
+		
+		context.clearRect(0, 0, 500, 500);
+		context.drawImage(showYourProgress.get(0), 0, 0);
+		
+		var data = {
+			from: startPos,
+			to: {
+				x: e.offsetX,
+				y: e.offsetY
+			}
+		};
+		_draw($('canvas'), data);
+		socket.emit('draw', data);
+		
+		isDrawing = false;
+	});
+	/**/
+	
+	/* Click to draw a large dot.
+	canvas.on('click', function(e) {
 		var data = {
 			x: e.offsetX,
 			y: e.offsetY,
@@ -47,6 +115,7 @@ $(function() {
 		socket.emit('draw', data);
 	});*/
 	
+	/* Click and drag to draw a freeform line.
 	var isDrawing = false,
 		mouseStops = [];
 	canvas.on('mousedown', function(e) {
@@ -86,10 +155,10 @@ $(function() {
 		socket.emit('draw', data);
 		
 		isDrawing = false;
-	});
+	});*/
 	
 	socket.on('draw', function(data) {
 		console.log('drawing from other user', data);
-		_draw(data);
+		_draw($('canvas'), data);
 	});
 });
