@@ -7,11 +7,27 @@ $(function() {
 	// TODO: Not using 'radius' because this is a line, not a circle.
 	var _draw = function(canvas, data)
 	{
-		/* Click and drag to draw a rectangle. data = {from: {x, y}, to: {x, y}} */
+		/* Click and drag to draw a circle. data = {from: {x, y}, to: {x, y} */
+		var diffX  = Math.abs(data.to.x - data.from.x),
+			diffY  = Math.abs(data.to.y - data.from.y),
+			radius = Math.min(diffX, diffY) / 2;
+		// TODO: This is really messy and should probably be cleaned up a bit.
+		var centerX = data.from.x + (radius * (data.to.x > data.from.x ? 1 : -1)),
+			centerY = data.from.y + (radius * (data.to.y > data.from.y ? 1 : -1));
+		
+		var context = canvas.get(0).getContext('2d');
+		context.beginPath();
+		// TODO: Allow a modifier key to use data.from as the center rather than topleft
+		context.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
+		context.closePath();
+		context.strokeStyle = '#000';
+		context.stroke();
+		
+		/* Click and drag to draw a rectangle. data = {from: {x, y}, to: {x, y}}
 		var context = canvas.get(0).getContext('2d');
 		context.beginPath();  // TODO: don't think this is needed
 		context.strokeStyle = '#000';
-		context.strokeRect(data.from.x, data.from.y, data.to.x - data.from.x, data.to.y - data.from.y);
+		context.strokeRect(data.from.x, data.from.y, data.to.x - data.from.x, data.to.y - data.from.y);*/
 		
 		/* Click and drag to draw a straight line. data = {from: {x, y}, to: {x, y}}
 		var context = canvas.get(0).getContext('2d');
