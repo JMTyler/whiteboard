@@ -61,6 +61,19 @@ $(function() {
 				context.stroke();
 				
 				break;
+			case 'catbutt':
+				var context = canvas.get(0).getContext('2d');
+				context.beginPath();
+				context.moveTo(data.x, data.y - 7);
+				context.lineTo(data.x, data.y + 7);
+				context.moveTo(data.x - 6, data.y - 4);
+				context.lineTo(data.x + 6, data.y + 4);
+				context.moveTo(data.x - 6, data.y + 4);
+				context.lineTo(data.x + 6, data.y - 4);
+				context.strokeStyle = '#000';
+				context.stroke();
+				
+				break;
 		}
 		
 		/* Click to draw a large dot. data = {x, y, r, c}
@@ -146,7 +159,13 @@ $(function() {
 		
 		isDrawing = false;
 	});
-	/**/
+	
+	$(document).on('click', 'canvas', function(e) {
+		if (activeTool == 'catbutt') {
+			_draw($('canvas'), {tool: activeTool, data: {x: e.offsetX, y: e.offsetY}});
+			socket.emit('draw', {tool: activeTool, data: {x: e.offsetX, y: e.offsetY}});
+		}
+	});
 	
 	/* Click to draw a large dot.
 	canvas.on('click', function(e) {
