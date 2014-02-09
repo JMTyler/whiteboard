@@ -4,54 +4,64 @@ $(function() {
 		canvas = $('canvas'),
 		context = canvas.get(0).getContext('2d');
 	
+	var activeTool = 'freeform';
+	
+	var toolButtons = $('.tool');
+	toolButtons.on('click', function() {
+		activeTool = $(this).data('tool');
+		toolButtons.each(function() {
+			$(this).prop('disabled', false);
+		});
+		$('[data-tool="' + activeTool + '"]').prop('disabled', true);
+		console.log(activeTool);
+	});
+	
+	$('.action[data-action="clear"]').on('click', function() {
+		canvas.get(0).getContext('2d').clearRect(0, 0, 500, 500);
+	});
+	
 	// TODO: Not using 'radius' because this is a line, not a circle.
 	var _draw = function(canvas, data)
 	{
-		/* Click and drag to draw a circle. data = {from: {x, y}, to: {x, y} */
-		var diffX  = Math.abs(data.to.x - data.from.x),
-			diffY  = Math.abs(data.to.y - data.from.y),
-			radius = Math.min(diffX, diffY) / 2;
-		// TODO: This is really messy and should probably be cleaned up a bit.
-		var centerX = data.from.x + (radius * (data.to.x > data.from.x ? 1 : -1)),
-			centerY = data.from.y + (radius * (data.to.y > data.from.y ? 1 : -1));
+		var tool = data.tool,
+			data = data.data;
 		
-		var context = canvas.get(0).getContext('2d');
-		context.beginPath();
-		// TODO: Allow a modifier key to use data.from as the center rather than topleft
-		context.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
-		context.closePath();
-		context.strokeStyle = '#000';
-		context.stroke();
-		
-		/* Click and drag to draw a rectangle. data = {from: {x, y}, to: {x, y}}
-		var context = canvas.get(0).getContext('2d');
-		context.beginPath();  // TODO: don't think this is needed
-		context.strokeStyle = '#000';
-		context.strokeRect(data.from.x, data.from.y, data.to.x - data.from.x, data.to.y - data.from.y);*/
-		
-		/* Click and drag to draw a straight line. data = {from: {x, y}, to: {x, y}}
-		var context = canvas.get(0).getContext('2d');
-		context.beginPath();  // TODO: don't think this is needed
-		context.moveTo(data.from.x, data.from.y);
-		context.lineTo(data.to.x, data.to.y);
-		context.strokeStyle = '#000';
-		context.stroke();*/
-		
-		/* Click and drag to draw a freeform line. data = {stops: [{x, y}, ...], colour}
-		var stops = data.stops;
-		if (stops.length == 0) {
-			return;
+		switch (tool) {
+			case 'circle':
+				var diffX  = Math.abs(data.to.x - data.from.x),
+					diffY  = Math.abs(data.to.y - data.from.y),
+					radius = Math.min(diffX, diffY) / 2;
+				// TODO: This is really messy and should probably be cleaned up a bit.
+				var centerX = data.from.x + (radius * (data.to.x > data.from.x ? 1 : -1)),
+					centerY = data.from.y + (radius * (data.to.y > data.from.y ? 1 : -1));
+				
+				var context = canvas.get(0).getContext('2d');
+				context.beginPath();
+				// TODO: Allow a modifier key to use data.from as the center rather than topleft
+				context.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
+				context.closePath();
+				context.strokeStyle = '#000';
+				context.stroke();
+				
+				break;
+			case 'rectangle':
+				var context = canvas.get(0).getContext('2d');
+				context.beginPath();  // TODO: don't think this is needed
+				context.strokeStyle = '#000';
+				context.strokeRect(data.from.x, data.from.y, data.to.x - data.from.x, data.to.y - data.from.y);
+				
+				break;
+			case 'line':
+			case 'freeform':
+				var context = canvas.get(0).getContext('2d');
+				context.beginPath();  // TODO: don't think this is needed
+				context.moveTo(data.from.x, data.from.y);
+				context.lineTo(data.to.x, data.to.y);
+				context.strokeStyle = '#000';
+				context.stroke();
+				
+				break;
 		}
-		
-		context.beginPath();  // TODO: don't think this is needed
-		context.moveTo(stops[0].x, stops[0].y);
-		
-		for (var i = 1; i < stops.length; i++) {
-			context.lineTo(stops[i].x, stops[i].y);
-		}
-		
-		context.strokeStyle = data.colour;
-		context.stroke();*/
 		
 		/* Click to draw a large dot. data = {x, y, r, c}
 		context.beginPath();
@@ -74,54 +84,65 @@ $(function() {
 	
 	socket = io.connect(location.href);
 	
-	/* Click and drag to draw a straight line. Shows the temporary line as you draw.
-	 * Click and drag to draw a rectangle. Shows the temporary rectangle as you draw.
-	 */
 	var showYourProgress,
 		isDrawing = false,
 		startPos = {x: 0, y: 0};
 	$(document).on('mousedown', 'canvas', function(e) {
 		isDrawing = true;
+		
 		startPos.x = e.offsetX;
 		startPos.y = e.offsetY;
 		
-		// Clone current state 
-		showYourProgress = _cloneCanvas(canvas);
+		if ($.inArray(activeTool, ['line', 'rectangle', 'circle']) > -1) {
+			// Clone current state 
+			showYourProgress = _cloneCanvas(canvas);
+		}
 	});
 	$(document).on('mousemove', 'canvas', function(e) {
 		if (!isDrawing) {
 			return;
 		}
 		
-		context.clearRect(0, 0, 500, 500);
-		context.drawImage(showYourProgress.get(0), 0, 0);
+		if ($.inArray(activeTool, ['line', 'rectangle', 'circle']) > -1) {
+			context.clearRect(0, 0, 500, 500);
+			context.drawImage(showYourProgress.get(0), 0, 0);
+		}
 		
+		var endPos = {
+			x: e.offsetX,
+			y: e.offsetY
+		};
 		var data = {
 			from: startPos,
-			to: {
-				x: e.offsetX,
-				y: e.offsetY
-			}
+			to: endPos
 		};
-		_draw(canvas, data);
+		_draw(canvas, {tool: activeTool, data: data});
+		
+		if (activeTool == 'freeform') {
+			socket.emit('draw', {tool: activeTool, data: data});
+			startPos = endPos;
+		}
 	});
 	$(document).on('mouseup', 'canvas', function(e) {
 		if (!isDrawing) {
 			return;
 		}
 		
-		context.clearRect(0, 0, 500, 500);
-		context.drawImage(showYourProgress.get(0), 0, 0);
-		
+		if ($.inArray(activeTool, ['line', 'rectangle', 'circle']) > -1) {
+			context.clearRect(0, 0, 500, 500);
+			context.drawImage(showYourProgress.get(0), 0, 0);
+		}
+				
+		var endPos = {
+			x: e.offsetX,
+			y: e.offsetY
+		};
 		var data = {
 			from: startPos,
-			to: {
-				x: e.offsetX,
-				y: e.offsetY
-			}
+			to: endPos
 		};
-		_draw($('canvas'), data);
-		socket.emit('draw', data);
+		_draw($('canvas'), {tool: activeTool, data: data});
+		socket.emit('draw', {tool: activeTool, data: data});
 		
 		isDrawing = false;
 	});
@@ -138,48 +159,6 @@ $(function() {
 	
 		_draw(data);
 		socket.emit('draw', data);
-	});*/
-	
-	/* Click and drag to draw a freeform line.
-	var isDrawing = false,
-		mouseStops = [];
-	canvas.on('mousedown', function(e) {
-		isDrawing = true;
-		mouseStops.length = 0;
-		mouseStops.push({
-			x: e.offsetX,
-			y: e.offsetY
-		});
-	});
-	canvas.on('mousemove', function(e) {
-		if (!isDrawing) {
-			return;
-		}
-		
-		mouseStops.push({
-			x: e.offsetX,
-			y: e.offsetY
-		});
-	});
-	canvas.on('mouseup', function(e) {
-		if (!isDrawing) {
-			return;
-		}
-		mouseStops.push({
-			x: e.offsetX,
-			y: e.offsetY
-		});
-		
-		var data = {
-			stops: mouseStops,
-			radius: 25,
-			colour: '#000'
-		};
-		
-		_draw(data);
-		socket.emit('draw', data);
-		
-		isDrawing = false;
 	});*/
 	
 	socket.on('draw', function(data) {
