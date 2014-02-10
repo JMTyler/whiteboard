@@ -1,5 +1,5 @@
-var mongoose = require('mongoose');
 
+var mongoose = require('mongoose');
 
 var ErrorCode = {
 	0 : 'Could not find unique User',
@@ -8,22 +8,18 @@ var ErrorCode = {
 };
 
 var adminEmails = [
-	'nathaniel.howlett@gmail.com',
-	'nathaniel.howlett@investorsgroup.com',
-	'scott.tolksdorf@gmail.com',
-	'scott@prestocalc.com',
-	'nate@prestocalc.com'
+	'jared@jaredtyler.ca'
 ];
 
 
 UserSchema = mongoose.Schema({
 	id : String,
 	email : String,
-	account_type : { type: String, default: 'beta'},
+	account_type : { type: String, 'default': 'beta'},
 	auth : [{
 		cookie      : String
 	}],
-	date  : { type: Date, default: Date.now },
+	date  : { type: Date, 'default': Date.now }
 });
 
 
@@ -61,16 +57,16 @@ UserSchema.statics.getByEmail = function(email, callback){
 	var self = this;
 	User.findOne({email : email}, function(err, user){
 		if(err){
-			return callback(err)
+			return callback(err);
 		}
 		if(!user){
 			return self.add({email : email}, callback);
 		}
 		return callback(null, user);
 	});
-}
+};
 
 
 User = mongoose.model('User', UserSchema);
 
-xo.api('/api/users', User, [mw.adminOnly]);
+xo.api('/api/user', User);//, [mw.adminOnly]);
