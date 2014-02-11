@@ -193,7 +193,8 @@ var _activateBoard = function(board) {
 				}
 				
 				// Suuuper basic way to load up a whiteboard's state when the user connects.
-				// TODO: It's absurdly slow when there are many artifacts (unsurprisingly), so this must be improved. 
+				// TODO: It's absurdly slow when there are many artifacts (unsurprisingly), so this must be improved.
+				//       see if you can use context.getImageData(), or at least context.putImageData()...
 				for (var i in board.state) {
 					if (!board.state.hasOwnProperty(i)) {
 						continue;

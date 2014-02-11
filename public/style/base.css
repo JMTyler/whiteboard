@@ -28,11 +28,7 @@ body{
 }
 
 .content{
-	max-width     : 960px;
-	margin-right  : auto;
-	/*margin-left   : auto;*/
-	padding-right : 20px;
-	padding-left  : 20px;
+	padding   : 20px;
 }
 
 h1{

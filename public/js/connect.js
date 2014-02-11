@@ -17,7 +17,8 @@ $(function() {
 	});
 	
 	$('.action[data-action="clear"]').on('click', function() {
-		canvas.get(0).getContext('2d').clearRect(0, 0, 500, 500);
+		canvas.get(0).getContext('2d').fillStyle = '#fff';
+		canvas.get(0).getContext('2d').fillRect(0, 0, canvas.width(), canvas.height());
 	});
 	
 	// TODO: Not using 'radius' because this is a line, not a circle.
@@ -92,8 +93,11 @@ $(function() {
 	};
 	
 	canvas.css('border', 'dotted 1px black')
-		.prop('width', 500)
-		.prop('height', 500);
+		.prop('width', $('.content').width() - $('.toolbar').width() - 6)
+		.prop('height', $(window).height() - 47);
+	
+	context.fillStyle = '#fff';
+	context.fillRect(0, 0, canvas.width(), canvas.height());
 	
 	var showYourProgress,
 		isDrawing = false,
@@ -115,7 +119,8 @@ $(function() {
 		}
 		
 		if ($.inArray(activeTool, ['line', 'rectangle', 'circle']) > -1) {
-			context.clearRect(0, 0, 500, 500);
+			context.fillStyle = '#fff';
+			context.fillRect(0, 0, $(this).width(), $(this).height());
 			context.drawImage(showYourProgress.get(0), 0, 0);
 		}
 		
@@ -140,7 +145,8 @@ $(function() {
 		}
 		
 		if ($.inArray(activeTool, ['line', 'rectangle', 'circle']) > -1) {
-			context.clearRect(0, 0, 500, 500);
+			context.fillStyle = '#fff';
+			context.fillRect(0, 0, $(this).width(), $(this).height());
 			context.drawImage(showYourProgress.get(0), 0, 0);
 		}
 				

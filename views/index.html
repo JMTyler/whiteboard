@@ -5,20 +5,24 @@
 
 <div class="content">
 	<!-- TODO: Inform IE7-8 users that they must install the 'explorercanvas' lib for this to work. -->
-	<canvas style="float: left;"></canvas>
-	<button class="tool" data-tool="freeform" style="vertical-align: top; width: 74px; height: 74px;" disabled>Freeform</button><br/>
-	<button class="tool" data-tool="line" style="vertical-align: top; width: 74px; height: 74px;">Line</button><br/>
-	<button class="tool" data-tool="rectangle" style="vertical-align: top; width: 74px; height: 74px;">Rectangle</button><br/>
-	<button class="tool" data-tool="circle" style="vertical-align: top; width: 74px; height: 74px;">Circle</button><br/>
-	<button class="tool" data-tool="catbutt" style="vertical-align: top; width: 74px; height: 74px;">Cat Butt</button><br/>
-	<!-- <button class="tool" data-tool="eraser" style="vertical-align: top; width: 74px; height: 74px;">Eraser</button><br/>--><br/><br/><br/>
-	<button class="action" data-action="clear" style="vertical-align: top; width: 74px; height: 74px;">CLEAR</button>
-	
-	<br/><br/><br/>
-	You are logged in as: <strong><%- nickname %></strong>
-	<br/><br/>
-	<u>Users currently viewing this whiteboard:</u>
-	<ul id="ulActiveUsers" style="list-style: bullet;"></ul>
+	<div class="toolbar" style="display: inline-block; vertical-align: top;">
+		<button class="tool btn btn-primary" data-tool="freeform" style="vertical-align: top; width: 84px; height: 84px;" disabled>Freeform</button><br/>
+		<button class="tool btn btn-primary" data-tool="line" style="vertical-align: top; width: 84px; height: 84px;">Line</button><br/>
+		<button class="tool btn btn-primary" data-tool="rectangle" style="vertical-align: top; width: 84px; height: 84px;">Rectangle</button><br/>
+		<button class="tool btn btn-primary" data-tool="circle" style="vertical-align: top; width: 84px; height: 84px;">Circle</button><br/>
+		<button class="tool btn btn-primary" data-tool="catbutt" style="vertical-align: top; width: 84px; height: 84px;">Cat Butt</button><br/>
+		<!-- <button class="tool" data-tool="eraser" style="vertical-align: top; width: 74px; height: 74px;">Eraser</button><br/>-->
+		<button class="action btn btn-warning" data-action="clear" style="vertical-align: top; width: 84px; height: 84px;">CLEAR</button>
+	</div>
+	<canvas></canvas>
+
+	<div class="users" style="display: none;">
+		<br/><br/><br/>
+		You are logged in as: <strong><%- nickname %></strong>
+		<br/><br/>
+		<u>Users currently viewing this whiteboard:</u>
+		<ul id="ulActiveUsers" style="list-style: bullet;"></ul>
+	</div>
 </div>
 
 <script type="text/javascript">
