@@ -47,9 +47,7 @@ var render = function(htmlFile, vars){
 	return ejs.render(tempRender, vars);
 };
 
-// TODO: users need to be separated by board
-var _activeUsers = {},
-	_inactiveUsers = {};
+var _inactiveUsers = {};
 var _addUser = function(user) {
 	if (typeof _inactiveUsers[user.id] != 'undefined') {
 		return;
@@ -61,24 +59,29 @@ var _addUser = function(user) {
 		user: user
 	};
 };
-var _activateUser = function(userId, socketId) {
+var _activateUser = function(board, userId, socketId) {
 	if (typeof _inactiveUsers[userId] == 'undefined') {
-		if (typeof _activeUsers[userId] == 'undefined') {
+		if (typeof board.activeUsers[userId] == 'undefined') {
 			console.log('could not find user to activate');
-			return;
+			return false;
 		}
-		
-		var user = _activeUsers[userId];
+	}
+	
+	// If they're already in the list, just update it with their latest socket.
+	if (typeof board.activeUsers[userId] != 'undefined') {
+		var user = board.activeUsers[userId];
 		user.socketIds.push(socketId);
 		console.log('added socket to user');
-		return;
+		return false;
 	}
 	
 	var user = _inactiveUsers[userId];
-	_inactiveUsers = _.without(_inactiveUsers, user);
+	//_inactiveUsers = _.without(_inactiveUsers, user);
 	user.socketIds = [socketId];
-	_activeUsers[userId] = user;
+	board.activeUsers[userId] = user;
 	console.log('activated user');
+	
+	return true;
 };
 var _deactivateUserBySocketId = function(socketId) {
 	for (var i in _activeUsers) {
@@ -171,16 +174,23 @@ var _activateBoard = function(board) {
 		return;
 	}
 	
-	console.log('spinning up \"' + board.code + '\"');
+	var activeBoard = {
+		code: board.code,
+		board: board,
+		activeUsers: {}
+	};
+	console.log('spinning up \"' + activeBoard.code + '\"');
 	
-	io.of('/' + board.code)
+	io.of('/' + activeBoard.code)
 		.on('connection', function(socket) {
 			// TODO: something is breaking really weirdly about this... not sure what
 			socket.on('new_user', function(data) {
-				_activateUser(data.userId, socket.id);
-				console.log('added socket id to this user', _activeUsers[data.userId]);
-				console.log('sending new connection down to existing users', _activeUsers[data.userId].user.nickname);
-				socket.broadcast.emit('new_user', {id: data.userId, nickname: _activeUsers[data.userId].user.nickname});
+				var isNewlyActivated = _activateUser(activeBoard, data.userId, socket.id);
+				if (isNewlyActivated) {
+					console.log('added socket id to this user', activeBoard.activeUsers[data.userId]);
+					console.log('sending new connection down to existing users', activeBoard.activeUsers[data.userId].user.nickname);
+					socket.broadcast.emit('new_user', {id: data.userId, nickname: activeBoard.activeUsers[data.userId].user.nickname});
+				}
 				
 				// Suuuper basic way to load up a whiteboard's state when the user connects.
 				// TODO: It's absurdly slow when there are many artifacts (unsurprisingly), so this must be improved. 
@@ -192,12 +202,12 @@ var _activateBoard = function(board) {
 				}
 
 				// TODO: Should have some kind of 'init' event, sending down everything the client needs on startup
-				console.log('sending all active users down to new connection', _activeUsers);
-				for (var i in _activeUsers) {
-					if (!_activeUsers.hasOwnProperty(i)) {
+				console.log('sending all active users down to new connection', activeBoard.activeUsers);
+				for (var i in activeBoard.activeUsers) {
+					if (!activeBoard.activeUsers.hasOwnProperty(i)) {
 						continue;
 					}
-					socket.emit('new_user', {id: _activeUsers[i].id, nickname: _activeUsers[i].user.nickname});
+					socket.emit('new_user', {id: activeBoard.activeUsers[i].id, nickname: activeBoard.activeUsers[i].user.nickname});
 				}
 			});
 			
@@ -222,7 +232,5 @@ var _activateBoard = function(board) {
 			});
 		});
 	
-	_activeBoards[board.code] = {
-		board: board
-	};
+	_activeBoards[board.code] = activeBoard;
 };
