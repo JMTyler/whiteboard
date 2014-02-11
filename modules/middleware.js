@@ -21,24 +21,43 @@ exports.getCategories = function(req,res,next){
 	});
 };
 
-
+var _generateUser = function(req, res, callback)
+{
+	callback = callback || function(){};
+	
+	User.add({
+		nickname: User.generateNickname(),
+		email: null
+	}, function(err, user) {
+		req.session.whiteboard_auth = {id: user.id};
+		req.user = user;
+		return callback(req, res);
+	});
+};
 
 var _loadUser = function(req,res,callback){
-	var cookie = req.cookies.presto_auth;
-	if(cookie){
-		User.findOne({'auth.cookie' : cookie}, function(err, user){
-			if(err || !user){ return callback(req, res); }
-			req.user = user;
-			console.log('Logged in:', user.email);
-			return callback(req,res);
-		});
-	} else{
-		return callback(req,res);
+	var auth = req.session.whiteboard_auth;
+	if (!auth) {
+		_generateUser(req, res, callback);
+		return;
 	}
-}
+	
+	User.findOne({'id' : auth.id}, function(err, user){
+		if(err || !user) {
+			_generateUser(req, res, callback);
+			return;
+		}
+		
+		req.user = user;
+		console.log('Logged in:', user.email);
+		return callback(req,res);
+	});
+};
 
 
 exports.loadUser = function(req,res,next){
+	next = next || function(){};
+	
 	_loadUser(req,res,function(){
 		next();
 	});

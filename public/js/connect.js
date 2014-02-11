@@ -95,8 +95,6 @@ $(function() {
 		.prop('width', 500)
 		.prop('height', 500);
 	
-	socket = io.connect(location.href);
-	
 	var showYourProgress,
 		isDrawing = false,
 		startPos = {x: 0, y: 0};
@@ -180,8 +178,29 @@ $(function() {
 		socket.emit('draw', data);
 	});*/
 	
+	socket = io.connect();
+	
+	socket.on('connect', function() {
+		console.log('sending own info up to server', userId);
+		socket.emit('new_user', {userId: userId});
+	});
+	
 	socket.on('draw', function(data) {
 		console.log('drawing from other user', data);
 		_draw($('canvas'), data);
+	});
+	
+	socket.on('new_user', function(data) {
+		console.log('receiving new user', data);
+		$('#ulActiveUsers').append(
+			$('<li>').data('userid', data.id).text(data.nickname)
+		);
+	});
+	
+	socket.on('user_disconnected', function(data) {
+		console.log('receiving: user disconnected');
+		$('#ulActiveUsers li').filter(function() {
+			return $(this).data('userid') == data.id;
+		}).remove();
 	});
 });

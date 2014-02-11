@@ -14,11 +14,9 @@ var adminEmails = [
 
 UserSchema = mongoose.Schema({
 	id : String,
+	nickname : String,
 	email : String,
 	account_type : { type: String, 'default': 'beta'},
-	auth : [{
-		cookie      : String
-	}],
 	date  : { type: Date, 'default': Date.now }
 });
 
@@ -46,6 +44,23 @@ UserSchema.statics.add = function(data, callback){
 	return newUser.save(callback);
 };
 
+UserSchema.statics.generateNickname = (function() {
+	var firstNames = ['Bill', 'Brian', 'Jared', 'Kate', 'Kellen',
+		'Megan', 'Nate', 'Scott', 'Wyatt'
+	], lastNames  = ['Curtis', 'Crockford', 'Tyler', 'Palser', 'Steffen',
+		'Kirkland', 'Morse', 'Tolksdorf', 'Carss'
+	], nicknames  = ['The Foregoing', 'The Divergent', 'The Supreme', 'The Invincible', 'The Foolish',
+		'The Steadfast', 'The Miscreant', 'The Dynamic', 'The Alcoholic', 'The Fabulous',
+		'The Ambiguous', 'The Resonant', 'The Vengeful', 'The Eminent', 'The Industrious'
+	];
+	return function() {
+		var firstName = firstNames[Math.floor(Math.random() * firstNames.length)],
+			lastName  = lastNames[Math.floor(Math.random() * lastNames.length)],
+			nickname  = nicknames[Math.floor(Math.random() * nicknames.length)];
+		return firstName + ' "' + nickname + '" ' + lastName;
+	};
+})();
+
 UserSchema.post('save', function(user){
 	if(!user.id) user.id = user._id;
 	user.update({id : user.id}, function(err){});
@@ -69,4 +84,4 @@ UserSchema.statics.getByEmail = function(email, callback){
 
 User = mongoose.model('User', UserSchema);
 
-xo.api('/api/user', User);//, [mw.adminOnly]);
+xo.api('/api/users', User, [mw.adminOnly]);

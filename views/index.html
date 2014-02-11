@@ -11,10 +11,16 @@
 	<button class="tool" data-tool="rectangle" style="vertical-align: top; width: 74px; height: 74px;">Rectangle</button><br/>
 	<button class="tool" data-tool="circle" style="vertical-align: top; width: 74px; height: 74px;">Circle</button><br/>
 	<button class="tool" data-tool="catbutt" style="vertical-align: top; width: 74px; height: 74px;">Cat Butt</button><br/>
-	<!-- <button class="tool" data-tool="eraser" style="vertical-align: top; width: 74px; height: 74px;">Eraser</button><br/>--><br/><br/><br/><br/><br/><br/><br/><br/>
+	<!-- <button class="tool" data-tool="eraser" style="vertical-align: top; width: 74px; height: 74px;">Eraser</button><br/>--><br/><br/><br/>
 	<button class="action" data-action="clear" style="vertical-align: top; width: 74px; height: 74px;">CLEAR</button>
+	
+	<br/><br/><br/>
+	You are logged in as: <strong><%- nickname %></strong>
+	<br/><br/>
+	<u>Users currently viewing this whiteboard:</u>
+	<ul id="ulActiveUsers" style="list-style: bullet;"></ul>
 </div>
 
-<script>
-	//var test = < %- test % >;
+<script type="text/javascript">
+	var userId = '<%- user_id %>';
 </script>
