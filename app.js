@@ -248,6 +248,9 @@ io.sockets.on('connection', function(socket) {
 	});
 	
 	socket.on('disconnect', function() {
+		// TODO: Figure out how to fix the many issues with this and re-enable it.
+		return;
+		
 		console.log('removing user by socket id', socket.id);
 		var userId = _deactivateUserBySocketId(socket.id);
 		console.log('removed this user', userId);
