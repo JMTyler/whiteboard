@@ -181,6 +181,15 @@ var _activateBoard = function(board) {
 				console.log('added socket id to this user', _activeUsers[data.userId]);
 				console.log('sending new connection down to existing users', _activeUsers[data.userId].user.nickname);
 				socket.broadcast.emit('new_user', {id: data.userId, nickname: _activeUsers[data.userId].user.nickname});
+				
+				// Suuuper basic way to load up a whiteboard's state when the user connects.
+				// TODO: It's absurdly slow when there are many artifacts (unsurprisingly), so this must be improved. 
+				for (var i in board.state) {
+					if (!board.state.hasOwnProperty(i)) {
+						continue;
+					}
+					socket.emit('draw', board.state[i]);
+				}
 
 				// TODO: Should have some kind of 'init' event, sending down everything the client needs on startup
 				console.log('sending all active users down to new connection', _activeUsers);
@@ -193,10 +202,15 @@ var _activateBoard = function(board) {
 			});
 			
 			socket.on('draw', function(data) {
+				board.state.push(data);
+				board.save();
 				socket.broadcast.emit('draw', data);
 			});
 			
 			socket.on('disconnect', function() {
+				// TODO: Figure out how to fix the many issues with this and re-enable it.
+				return;
+				
 				console.log('removing user by socket id', socket.id);
 				var userId = _deactivateUserBySocketId(socket.id);
 				console.log('removed this user', userId);
@@ -212,41 +226,3 @@ var _activateBoard = function(board) {
 		board: board
 	};
 };
-
-//Socket server
-io.sockets.on('connection', function(socket) {
-	// TODO: something is breaking really weirdly about this... not sure what
-	socket.on('new_user', function(data) {
-		_activateUser(data.userId, socket.id);
-		console.log('added socket id to this user', _activeUsers[data.userId]);
-		console.log('sending new connection down to existing users', _activeUsers[data.userId].user.nickname);
-		socket.broadcast.emit('new_user', {id: data.userId, nickname: _activeUsers[data.userId].user.nickname});
-
-		// TODO: Should have some kind of 'init' event, sending down everything the client needs on startup
-		console.log('sending all active users down to new connection', _activeUsers);
-		for (var i in _activeUsers) {
-			if (!_activeUsers.hasOwnProperty(i)) {
-				continue;
-			}
-			socket.emit('new_user', {id: _activeUsers[i].id, nickname: _activeUsers[i].user.nickname});
-		}
-	});
-	
-	socket.on('draw', function(data) {
-		socket.broadcast.emit('draw', data);
-	});
-	
-	socket.on('disconnect', function() {
-		// TODO: Figure out how to fix the many issues with this and re-enable it.
-		return;
-		
-		console.log('removing user by socket id', socket.id);
-		var userId = _deactivateUserBySocketId(socket.id);
-		console.log('removed this user', userId);
-		if (!userId) {
-			return;
-		}
-		// TODO: is doesn't handle this gracefully if a user refreshes the page... they should NOT blip out from the list
-		socket.broadcast.emit('user_disconnected', {id: userId});
-	});
-});

@@ -11,6 +11,7 @@ BoardSchema = mongoose.Schema({
 	id : String,
 	name : String,
 	code : String,
+	state : [],
 	date  : { type: Date, 'default': Date.now }
 });
 
