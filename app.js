@@ -126,17 +126,6 @@ app.get('/', function(req,res){
 		});
 		res.end();
 	});
-	// TODO: auto-logging in as admin account (local) for testing
-	//req.session.whiteboard_auth = {id: '52f82227756c50a4068d4eb3'};
-	mw.loadUser(req, res, function() {
-		// TODO: Remember to make secret features using below code!
-		//typeof req.query['with'] != 'undefined' && req.query['with'] == 'catbutt'
-		_addUser(req.user);
-		res.end(render('index.html', {
-			user_id: req.user.id,
-			nickname: req.user.nickname
-		}));
-	});
 });
 
 /*app.get('/thing/:thingid', function(req,res){
