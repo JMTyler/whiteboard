@@ -1,6 +1,6 @@
-
+var socket;  // TODO: just for testing, so I can access it in the dev tools
 $(function() {
-	var socket,
+	var //socket,
 		canvas = $('canvas'),
 		context = canvas.get(0).getContext('2d');
 	
@@ -178,7 +178,7 @@ $(function() {
 		socket.emit('draw', data);
 	});*/
 	
-	socket = io.connect();
+	socket = io.connect(location.href);  // Need to do this again to support socket.io namespaces... is there a better way?
 	
 	socket.on('connect', function() {
 		console.log('sending own info up to server', userId);

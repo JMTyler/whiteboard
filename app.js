@@ -30,6 +30,7 @@ xo  = require('./modules/xo-node.js');
 
 //Models
 require('./modules/models/user.js');
+require('./modules/models/board.js');
 
 
 // Web server
@@ -46,6 +47,7 @@ var render = function(htmlFile, vars){
 	return ejs.render(tempRender, vars);
 };
 
+// TODO: users need to be separated by board
 var _activeUsers = {},
 	_inactiveUsers = {};
 var _addUser = function(user) {
@@ -105,8 +107,25 @@ var _deactivateUserBySocketId = function(socketId) {
 	return null;//TODO throw
 };
 
+
 // Routes
 app.get('/', function(req,res){
+	// Hitting the base url should spin up a new board and redirect you to it
+	Board.add({
+		code: Board.generateCode(),
+		name: "New Whiteboard"
+	}, function(err, board) {
+		if (err || !board) {
+			res.end(render('oops.html'));
+			return;
+		}
+		
+		// TODO: Something about this breaks after second attempt (can't send headers)
+		res.writeHead(302, {
+			Location: '/' + board.code
+		});
+		res.end();
+	});
 	// TODO: auto-logging in as admin account (local) for testing
 	//req.session.whiteboard_auth = {id: '52f82227756c50a4068d4eb3'};
 	mw.loadUser(req, res, function() {
@@ -136,10 +155,74 @@ app.get('*', function(req,res){
 		var content = fs.readFileSync(__dirname + '/public' + req.params, 'utf8');
 		res.end(content);
 	} catch (e) {
-		res.end(render('oops.html'));
+		var code = new String(req.params).substring(1);
+		Board.findByCode(code, function(err, board) {
+			if (err || !board) {
+				res.end(render('oops.html'));
+				return;
+			}
+			
+			mw.loadUser(req, res, function() {
+				// TODO: Remember to make secret features using below code!
+				//typeof req.query['with'] != 'undefined' && req.query['with'] == 'catbutt'
+				_addUser(req.user);
+				_activateBoard(board);
+				res.end(render('index.html', {
+					user_id: req.user.id,
+					nickname: req.user.nickname
+				}));
+			});
+		});
 	}
 });
 
+var _activeBoards = {};
+var _activateBoard = function(board) {
+	if (typeof _activeBoards[board.code] != 'undefined') {
+		return;
+	}
+	
+	console.log('spinning up \"' + board.code + '\"');
+	
+	io.of('/' + board.code)
+		.on('connection', function(socket) {
+			// TODO: something is breaking really weirdly about this... not sure what
+			socket.on('new_user', function(data) {
+				_activateUser(data.userId, socket.id);
+				console.log('added socket id to this user', _activeUsers[data.userId]);
+				console.log('sending new connection down to existing users', _activeUsers[data.userId].user.nickname);
+				socket.broadcast.emit('new_user', {id: data.userId, nickname: _activeUsers[data.userId].user.nickname});
+
+				// TODO: Should have some kind of 'init' event, sending down everything the client needs on startup
+				console.log('sending all active users down to new connection', _activeUsers);
+				for (var i in _activeUsers) {
+					if (!_activeUsers.hasOwnProperty(i)) {
+						continue;
+					}
+					socket.emit('new_user', {id: _activeUsers[i].id, nickname: _activeUsers[i].user.nickname});
+				}
+			});
+			
+			socket.on('draw', function(data) {
+				socket.broadcast.emit('draw', data);
+			});
+			
+			socket.on('disconnect', function() {
+				console.log('removing user by socket id', socket.id);
+				var userId = _deactivateUserBySocketId(socket.id);
+				console.log('removed this user', userId);
+				if (!userId) {
+					return;
+				}
+				// TODO: is doesn't handle this gracefully if a user refreshes the page... they should NOT blip out from the list
+				socket.broadcast.emit('user_disconnected', {id: userId});
+			});
+		});
+	
+	_activeBoards[board.code] = {
+		board: board
+	};
+};
 
 //Socket server
 io.sockets.on('connection', function(socket) {
