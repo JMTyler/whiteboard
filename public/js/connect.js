@@ -98,7 +98,7 @@ $(function() {
 	};
 	
 	canvas.css('border', 'dotted 1px black')
-		.prop('width', $('.content').width() - $('.toolbar').width() - $('.users').width() - 10)
+		.prop('width', $('.content').width() - $('.toolbar').width() - $('.users').width() - 45)
 		.prop('height', $(window).height() - 47);
 	
 	_clearCanvas();
@@ -206,7 +206,7 @@ $(function() {
 	
 	socket.on('new_user', function(data) {
 		$('#ulActiveUsers').append(
-			$('<li>').data('userid', data.id).text(data.nickname)
+			$('<li>').data('userid', data.id).addClass('list-group-item').text(data.nickname)
 		);
 	});
 	
