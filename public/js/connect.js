@@ -13,7 +13,6 @@ $(function() {
 			$(this).prop('disabled', false);
 		});
 		$('[data-tool="' + activeTool + '"]').prop('disabled', true);
-		console.log(activeTool);
 	});
 	
 	$('.action[data-action="clear"]').on('click', function() {
@@ -93,7 +92,7 @@ $(function() {
 	};
 	
 	canvas.css('border', 'dotted 1px black')
-		.prop('width', $('.content').width() - $('.toolbar').width() - 6)
+		.prop('width', $('.content').width() - $('.toolbar').width() - $('.users').width() - 10)
 		.prop('height', $(window).height() - 47);
 	
 	context.fillStyle = '#fff';
@@ -187,24 +186,20 @@ $(function() {
 	socket = io.connect(location.href);  // Need to do this again to support socket.io namespaces... is there a better way?
 	
 	socket.on('connect', function() {
-		console.log('sending own info up to server', userId);
 		socket.emit('new_user', {userId: userId});
 	});
 	
 	socket.on('draw', function(data) {
-		console.log('drawing from other user', data);
 		_draw($('canvas'), data);
 	});
 	
 	socket.on('new_user', function(data) {
-		console.log('receiving new user', data);
 		$('#ulActiveUsers').append(
 			$('<li>').data('userid', data.id).text(data.nickname)
 		);
 	});
 	
 	socket.on('user_disconnected', function(data) {
-		console.log('receiving: user disconnected');
 		$('#ulActiveUsers li').filter(function() {
 			return $(this).data('userid') == data.id;
 		}).remove();
