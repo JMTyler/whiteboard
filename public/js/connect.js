@@ -16,9 +16,15 @@ $(function() {
 	});
 	
 	$('.action[data-action="clear"]').on('click', function() {
+		_clearCanvas();
+		socket.emit('action', {type: 'clear'});
+	});
+	
+	var _clearCanvas = function()
+	{
 		canvas.get(0).getContext('2d').fillStyle = '#fff';
 		canvas.get(0).getContext('2d').fillRect(0, 0, canvas.width(), canvas.height());
-	});
+	};
 	
 	// TODO: Not using 'radius' because this is a line, not a circle.
 	var _draw = function(canvas, data)
@@ -95,8 +101,7 @@ $(function() {
 		.prop('width', $('.content').width() - $('.toolbar').width() - $('.users').width() - 10)
 		.prop('height', $(window).height() - 47);
 	
-	context.fillStyle = '#fff';
-	context.fillRect(0, 0, canvas.width(), canvas.height());
+	_clearCanvas();
 	
 	var showYourProgress,
 		isDrawing = false,
@@ -118,8 +123,7 @@ $(function() {
 		}
 		
 		if ($.inArray(activeTool, ['line', 'rectangle', 'circle']) > -1) {
-			context.fillStyle = '#fff';
-			context.fillRect(0, 0, $(this).width(), $(this).height());
+			_clearCanvas();
 			context.drawImage(showYourProgress.get(0), 0, 0);
 		}
 		
@@ -144,8 +148,7 @@ $(function() {
 		}
 		
 		if ($.inArray(activeTool, ['line', 'rectangle', 'circle']) > -1) {
-			context.fillStyle = '#fff';
-			context.fillRect(0, 0, $(this).width(), $(this).height());
+			_clearCanvas();
 			context.drawImage(showYourProgress.get(0), 0, 0);
 		}
 				
@@ -191,6 +194,14 @@ $(function() {
 	
 	socket.on('draw', function(data) {
 		_draw($('canvas'), data);
+	});
+	
+	socket.on('action', function(action) {
+		switch (action.type) {
+			case 'clear':
+				_clearCanvas();
+				break;
+		}
 	});
 	
 	socket.on('new_user', function(data) {

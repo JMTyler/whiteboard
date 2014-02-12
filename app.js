@@ -195,10 +195,7 @@ var _activateBoard = function(board) {
 				// Suuuper basic way to load up a whiteboard's state when the user connects.
 				// TODO: It's absurdly slow when there are many artifacts (unsurprisingly), so this must be improved.
 				//       see if you can use context.getImageData(), or at least context.putImageData()...
-				for (var i in board.state) {
-					if (!board.state.hasOwnProperty(i)) {
-						continue;
-					}
+				for (var i = 0; i < board.state.length; i++) {
 					socket.emit('draw', board.state[i]);
 				}
 
@@ -216,6 +213,15 @@ var _activateBoard = function(board) {
 				board.state.push(data);
 				board.save();
 				socket.broadcast.emit('draw', data);
+			});
+			
+			socket.on('action', function(action) {
+				switch (action.type) {
+					case 'clear':
+						board.state = [];
+						board.save();
+				}
+				socket.broadcast.emit('action', action);
 			});
 			
 			socket.on('disconnect', function() {
