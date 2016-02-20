@@ -11,8 +11,8 @@ GLOBAL.io       = require('socket.io').listen(server);
 mongoose = require('mongoose');
 var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/whiteboard';
 mongoose.connect(mongoUri);
-mongoose.connection.on('error', function(){
-	console.log(">>>ERROR: Run Mongodb.exe ya goof!");
+mongoose.connection.on('error', function(err) {
+	console.log('Failed to connect to Mongo', err, err.stack);
 });
 
 // Express
@@ -118,6 +118,9 @@ app.get('/', function(req,res){
 		code: Board.generateCode(),
 		name: "New Whiteboard"
 	}, function(err, board) {
+		if (err) {
+			console.log('Error when generating new board', err);
+		}
 		if (err || !board) {
 			res.end(render('oops.html'));
 			return;
@@ -149,6 +152,9 @@ app.get('*', function(req,res){
 	} catch (e) {
 		var code = new String(req.params).substring(1);
 		Board.findByCode(code, function(err, board) {
+			if (err) {
+				console.log('Error when generating new board', err);
+			}
 			if (err || !board) {
 				res.end(render('oops.html'));
 				return;
